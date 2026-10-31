@@ -7,7 +7,6 @@
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-title" content="خواستگاری" />
 <title>مقایسه گزینه‌های ازدواج</title>
-<link rel="manifest" href='data:application/manifest+json,{"name":"Khastegari","short_name":"Khastegari","start_url":".","display":"standalone","background_color":"%23f1f5f9","theme_color":"%230f766e"}'>
 <style>
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   html,body{margin:0;padding:0}
@@ -16,7 +15,6 @@
     background:#eef2f7;color:#0f172a;padding-bottom:110px;
     -webkit-font-smoothing:antialiased;
   }
-  /* ---------- Header ---------- */
   header{
     position:sticky;top:0;z-index:20;color:#fff;
     background:linear-gradient(135deg,#0f766e,#0e7490);
@@ -24,14 +22,18 @@
     box-shadow:0 6px 18px rgba(15,23,42,.18);
     display:flex;align-items:center;gap:10px;
   }
-  header h1{margin:0;font-size:16px;font-weight:800;letter-spacing:.2px}
-  header .sub{font-size:11px;opacity:.85;margin-top:2px}
+  header h1{margin:0;font-size:16px;font-weight:800}
+  header .sub{font-size:11px;opacity:.9;margin-top:3px;display:flex;align-items:center;gap:5px}
+  .dot{width:8px;height:8px;border-radius:50%;background:#cbd5e1;display:inline-block}
+  .dot.ok{background:#22c55e}
+  .dot.err{background:#ef4444}
+  .dot.warn{background:#f59e0b}
+  .dot.info{background:#60a5fa}
   .count{
     margin-inline-start:auto;background:rgba(255,255,255,.18);
     border:1px solid rgba(255,255,255,.28);
     border-radius:999px;padding:5px 12px;font-size:11.5px;font-weight:700;white-space:nowrap;
   }
-  /* ---------- Toolbar ---------- */
   .toolbar{
     display:flex;gap:8px;overflow-x:auto;padding:10px 14px;
     background:#fff;border-bottom:1px solid #e2e8f0;scrollbar-width:none;
@@ -46,7 +48,7 @@
   .btn:active{transform:scale(.96);background:#f1f5f9}
   .btn.primary{background:#0f766e;border-color:#0f766e;color:#fff}
   .btn.primary:active{background:#0b5f59}
-  /* ---------- Cards ---------- */
+  .btn:disabled{opacity:.4;pointer-events:none}
   #list{padding:4px 0}
   .card{
     background:#fff;border:1px solid #e2e8f0;border-radius:18px;margin:12px 14px;
@@ -58,8 +60,7 @@
   }
   .score{
     min-width:54px;text-align:center;background:#0f766e;color:#fff;
-    border-radius:13px;padding:6px 6px;font-weight:800;font-size:15px;line-height:1;
-    flex:0 0 auto;
+    border-radius:13px;padding:6px;font-weight:800;font-size:15px;line-height:1;flex:0 0 auto;
   }
   .score span{display:block;font-size:9px;font-weight:500;opacity:.85;margin-top:3px}
   .title{flex:1;font-size:14px;font-weight:800;min-width:0}
@@ -91,11 +92,9 @@
     border-top:1px dashed #e2e8f0;margin-top:2px;
   }
   .notes b{color:#0f766e;font-weight:700}
-  /* ---------- Empty ---------- */
   #empty{display:none;flex-direction:column;align-items:center;gap:8px;padding:60px 24px;text-align:center;color:#94a3b8}
   #empty .ico{font-size:44px}
   #empty p{margin:0;font-size:13px;line-height:1.8}
-  /* ---------- FAB ---------- */
   .fab{
     position:fixed;left:16px;bottom:calc(18px + env(safe-area-inset-bottom));
     width:58px;height:58px;border-radius:50%;border:none;cursor:pointer;
@@ -104,7 +103,6 @@
     transition:.15s;
   }
   .fab:active{transform:scale(.93)}
-  /* ---------- Modal ---------- */
   .modal{
     position:fixed;inset:0;background:rgba(15,23,42,.5);z-index:50;
     display:none;align-items:flex-end;justify-content:center;backdrop-filter:blur(2px);
@@ -116,9 +114,7 @@
     animation:up .25s cubic-bezier(.2,.8,.3,1);
   }
   @keyframes up{from{transform:translateY(40px);opacity:.6}to{transform:translateY(0);opacity:1}}
-  .sheet-head{
-    display:flex;align-items:center;padding:14px 16px;border-bottom:1px solid #eef2f7;
-  }
+  .sheet-head{display:flex;align-items:center;padding:14px 16px;border-bottom:1px solid #eef2f7}
   .sheet-head h2{margin:0;font-size:15px;font-weight:800;flex:1}
   .sheet-head button{
     width:32px;height:32px;border-radius:10px;border:1px solid #e2e8f0;background:#fff;
@@ -137,6 +133,7 @@
   .field input:focus,.field textarea:focus{
     outline:none;border-color:#0f766e;background:#fff;box-shadow:0 0 0 3px rgba(15,118,110,.13);
   }
+  .field small{display:block;color:#94a3b8;font-size:11px;margin-top:4px;line-height:1.5}
   .photo-pick{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
   .photo-pick img{
     width:74px;height:94px;object-fit:cover;border-radius:12px;background:#e2e8f0;
@@ -148,13 +145,25 @@
     border-top:1px solid #eef2f7;background:#fff;
   }
   .sheet-foot .btn{flex:1;justify-content:center;padding:12px;font-size:14px}
-  /* ---------- Lightbox ---------- */
   .lightbox{
     position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:100;
     display:none;place-items:center;padding:20px;
   }
   .lightbox.show{display:grid}
   .lightbox img{max-width:100%;max-height:88vh;border-radius:14px}
+  #toast{
+    position:fixed;bottom:calc(90px + env(safe-area-inset-bottom));right:50%;
+    transform:translateX(50%) translateY(20px);opacity:0;
+    background:#0f172a;color:#fff;padding:10px 18px;border-radius:12px;
+    font-size:12.5px;font-weight:600;z-index:200;transition:.3s;pointer-events:none;
+    box-shadow:0 8px 24px rgba(15,23,42,.3);
+  }
+  #toast.show{opacity:1;transform:translateX(50%) translateY(0)}
+  .notice{
+    background:#fef3c7;border:1px solid #fcd34d;color:#78350f;
+    padding:10px 14px;font-size:12px;line-height:1.6;
+  }
+  .notice b{color:#92400e}
 </style>
 </head>
 <body>
@@ -162,19 +171,22 @@
 <header>
   <div>
     <h1>مقایسه گزینه‌های ازدواج</h1>
-    <div class="sub">اطلاعات هر نفر در یک کارت مجزا</div>
+    <div class="sub"><span class="dot" id="syncDot"></span><span id="syncText">آماده</span></div>
   </div>
   <div class="count" id="count">خالی</div>
 </header>
 
 <div class="toolbar">
   <button class="btn primary" id="btnAdd">➕ افزودن</button>
-  <button class="btn" id="btnSort">⇅ مرتب‌سازی با امتیاز</button>
-  <button class="btn" id="btnShare">🔗 لینک اشتراک</button>
-  <button class="btn" id="btnExport">📤 پشتیبان‌گیری</button>
+  <button class="btn" id="btnRefresh">🔄 به‌روزرسانی</button>
+  <button class="btn" id="btnSort">⇅ مرتب‌سازی</button>
+  <button class="btn" id="btnExport">📤 پشتیبان</button>
   <button class="btn" id="btnImport">📥 بازیابی</button>
+  <button class="btn" id="btnSettings">⚙️ تنظیمات</button>
   <input type="file" id="importInput" accept="application/json,.json" hidden />
 </div>
+
+<div id="noticeBar" class="notice" style="display:none"></div>
 
 <div id="empty">
   <div class="ico">🗂️</div>
@@ -185,7 +197,7 @@
 
 <button class="fab" id="fab" aria-label="افزودن">＋</button>
 
-<!-- Modal -->
+<!-- فرم افزودن/ویرایش -->
 <div class="modal" id="modal">
   <div class="sheet">
     <div class="sheet-head">
@@ -196,77 +208,300 @@
       <div class="fields" id="formFields"></div>
     </div>
     <div class="sheet-foot">
-      <button class="btn primary" id="btnSave">ذخیره</button>
+      <button class="btn primary" id="btnSave">ذخیره و ارسال به گیت‌هاب</button>
       <button class="btn" id="btnCancel">انصراف</button>
     </div>
   </div>
 </div>
 
+<!-- تنظیمات گیت‌هاب -->
+<div class="modal" id="settingsModal">
+  <div class="sheet">
+    <div class="sheet-head">
+      <h2>تنظیمات همگام‌سازی گیت‌هاب</h2>
+      <button id="btnSettingsClose" aria-label="بستن">✕</button>
+    </div>
+    <div class="sheet-body">
+      <div class="field full">
+        <label>نام کاربری گیت‌هاب</label>
+        <input id="setOwner" placeholder="مثلاً: ali-ahmadi" />
+        <small>باید همان چیزی باشد که در بالای فایل تنظیم کردید.</small>
+      </div>
+      <div class="field full">
+        <label>نام مخزن</label>
+        <input id="setRepo" placeholder="مثلاً: khastegari-data" />
+      </div>
+      <div class="field full">
+        <label>شاخه</label>
+        <input id="setBranch" placeholder="main" />
+      </div>
+      <div class="field full">
+        <label>توکن گیت‌هاب (فقط برای دستگاه خودت)</label>
+        <input id="setToken" type="password" placeholder="github_pat_..." />
+        <small>این توکن فقط برای ویرایش است. خانواده به آن نیاز ندارند. فقط روی دستگاه خودت ذخیره می‌شود.</small>
+      </div>
+    </div>
+    <div class="sheet-foot">
+      <button class="btn primary" id="btnSettingsSave">ذخیره و تست اتصال</button>
+      <button class="btn" id="btnSettingsCancel">انصراف</button>
+    </div>
+  </div>
+</div>
+
 <div class="lightbox" id="lightbox"><img id="lightboxImg" alt="" /></div>
+<div id="toast"></div>
 
 <script>
-/* ================= تنظیمات فیلدها ================= */
-const FIELDS = [
-  { k:'score',  label:'امتیاز',        type:'number', ph:'۰ تا ۱۰۰' },
-  { k:'code',   label:'کد فرم',        type:'text',   ph:'مثلاً ۱۲۳' },
-  { k:'age',    label:'سن',            type:'number', ph:'مثلاً ۲۸' },
-  { k:'exp',    label:'سابقه',         type:'text',   ph:'مثلاً ۲ سال' },
-  { k:'degree', label:'مدرک',          type:'text',   ph:'لیسانس' },
-  { k:'job',    label:'شغل',           type:'text',   ph:'—' },
-  { k:'height', label:'قد',            type:'number', ph:'سانتی‌متر' },
-  { k:'weight', label:'وزن',           type:'number', ph:'کیلوگرم' },
-  { k:'city',   label:'ساکن',          type:'text',   ph:'شهر' },
-  { k:'family', label:'نفرات',         type:'text',   ph:'تعداد خانواده' },
-  { k:'cover',  label:'پوشش',          type:'text',   ph:'—' },
-  { k:'dowry',  label:'جهیزیه',        type:'text',   ph:'—' },
-  { k:'skin',   label:'پوست',          type:'text',   ph:'—' },
-  { k:'father', label:'پدر',           type:'text',   ph:'شغل / وضعیت' },
-  { k:'mother', label:'مادر',          type:'text',   ph:'شغل / وضعیت' },
-  { k:'photo',  label:'عکس',           type:'photo' },
-  { k:'notes',  label:'سایر توضیحات',  type:'textarea', ph:'هر نکته‌ای که مهم است...' }
-];
-const HIDDEN_IN_GRID = ['score','code','photo','notes'];
+/* ═══════════════════════════════════════════════════════════════
+   ⚙️  تنظیمات ثابت - این دو خط را حتماً پر کنید
+   ═══════════════════════════════════════════════════════════════
+   بعد از اینکه این دو مقدار را درست کردید، فایل را در همان
+   مخزن گیت‌هاب آپلود کنید. خانواده فقط آدرس GitHub Pages را
+   باز می‌کنند و همین مقادیر برایشان استفاده می‌شود.
+   ═══════════════════════════════════════════════════════════════ */
+const GH_OWNER = 'YOUR_USERNAME';        // ← نام کاربری گیت‌هاب خودت
+const GH_REPO  = 'khastegari-data';      // ← نام مخزنی که ساختی
+/* ═══════════════════════════════════════════════════════════════ */
 
-/* ================= ابزارها ================= */
+// بقیه تنظیمات پیش‌فرض (معمولاً نیازی به تغییر ندارند)
+const DEFAULTS = { owner: GH_OWNER, repo: GH_REPO, branch: 'main', path: 'data.json' };
+
+// کلیدهای حافظه مرورگر
+const KEY_CARDS  = 'khastegari_cards_v2';
+const KEY_CONFIG = 'khastegari_config_v2';
+const KEY_TOKEN  = 'khastegari_token_v2';
+const KEY_SHA    = 'khastegari_sha_v2';
+
+// ═══════════ ابزارهای کمکی ═══════════
 const $ = s => document.querySelector(s);
-const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 
-function b64enc(str){
+function utf8ToBase64(str) {
   const bytes = new TextEncoder().encode(str);
   let bin = '';
-  for (let i=0;i<bytes.length;i++) bin += String.fromCharCode(bytes[i]);
-  return btoa(bin).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+  const chunk = 0x8000;
+  for (let i = 0; i < bytes.length; i += chunk) {
+    bin += String.fromCharCode.apply(null, bytes.subarray(i, i + chunk));
+  }
+  return btoa(bin);
 }
-function b64dec(s){
-  s = s.replace(/-/g,'+').replace(/_/g,'/');
-  const bin = atob(s);
-  const bytes = Uint8Array.from(bin, c => c.charCodeAt(0));
+function base64ToUtf8(b64) {
+  const bin = atob(b64);
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
   return new TextDecoder().decode(bytes);
 }
 
-/* ================= ذخیره‌سازی ================= */
-const KEY = 'khastegari_v1';
+let toastTimer;
+function toast(msg, ms = 2200) {
+  const el = $('#toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), ms);
+}
+
+function setStatus(text, kind) {
+  $('#syncText').textContent = text;
+  const dot = $('#syncDot');
+  dot.className = 'dot' + (kind ? ' ' + kind : '');
+}
+
+function showNotice(html) {
+  const bar = $('#noticeBar');
+  if (html) { bar.innerHTML = html; bar.style.display = 'block'; }
+  else bar.style.display = 'none';
+}
+
+// ═══════════ تنظیمات و توکن ═══════════
+let config = { ...DEFAULTS };
+function loadConfig() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(KEY_CONFIG) || '{}');
+    config = { ...DEFAULTS, ...saved };
+  } catch(e) { config = { ...DEFAULTS }; }
+}
+function saveConfig() {
+  localStorage.setItem(KEY_CONFIG, JSON.stringify(config));
+}
+function getToken()  { return localStorage.getItem(KEY_TOKEN) || ''; }
+function setToken(t) {
+  if (t) localStorage.setItem(KEY_TOKEN, t);
+  else localStorage.removeItem(KEY_TOKEN);
+}
+function hasWriteAccess() { return !!getToken(); }
+
+// ═══════════ مدل داده ═══════════
+const FIELDS = [
+  { k:'score',  label:'امتیاز',        type:'number',   ph:'۰ تا ۱۰۰' },
+  { k:'code',   label:'کد فرم',        type:'text',     ph:'مثلاً ۱۲۳' },
+  { k:'age',    label:'سن',            type:'number',   ph:'مثلاً ۲۸' },
+  { k:'exp',    label:'سابقه',         type:'text',     ph:'مثلاً ۲ سال' },
+  { k:'degree', label:'مدرک',          type:'text',     ph:'لیسانس' },
+  { k:'job',    label:'شغل',           type:'text',     ph:'—' },
+  { k:'height', label:'قد',            type:'number',   ph:'سانتی‌متر' },
+  { k:'weight', label:'وزن',           type:'number',   ph:'کیلوگرم' },
+  { k:'city',   label:'ساکن',          type:'text',     ph:'شهر' },
+  { k:'family', label:'نفرات',         type:'text',     ph:'تعداد خانواده' },
+  { k:'cover',  label:'پوشش',          type:'text',     ph:'—' },
+  { k:'dowry',  label:'جهیزیه',        type:'text',     ph:'—' },
+  { k:'skin',   label:'پوست',          type:'text',     ph:'—' },
+  { k:'father', label:'پدر',           type:'text',     ph:'شغل / وضعیت' },
+  { k:'mother', label:'مادر',          type:'text',     ph:'شغل / وضعیت' },
+  { k:'photo',  label:'عکس',           type:'photo' },
+  { k:'notes',  label:'سایر توضیحات',  type:'textarea', ph:'هر نکته‌ای که مهم است...' }
+];
+const HIDDEN_IN_GRID = ['score', 'code', 'photo', 'notes'];
+
 let cards = [];
 let editingId = null;
 let curPhoto = '';
+let isSyncing = false;
 
-function save(){
-  try { localStorage.setItem(KEY, JSON.stringify(cards)); }
-  catch(e){ alert('حافظه گوشی پر شد. چند عکس را حذف کن یا از فایل پشتیبان استفاده کن.'); }
-}
-function load(){
-  try { cards = JSON.parse(localStorage.getItem(KEY) || '[]'); }
-  catch(e){ cards = []; }
+function loadLocal() {
+  try { cards = JSON.parse(localStorage.getItem(KEY_CARDS) || '[]'); }
+  catch(e) { cards = []; }
   if (!Array.isArray(cards)) cards = [];
 }
+function saveLocal() {
+  try { localStorage.setItem(KEY_CARDS, JSON.stringify(cards)); }
+  catch(e) { toast('حافظه پر است - چند عکس حذف کن'); }
+}
 
-/* ================= رندر کارت‌ها ================= */
-function render(){
+// ═══════════ ارتباط با گیت‌هاب ═══════════
+function apiUrl() {
+  return `https://api.github.com/repos/${config.owner}/${config.repo}/contents/${config.path}`;
+}
+
+async function fetchFromGitHub() {
+  if (!config.owner || !config.repo) {
+    throw new Error('نام کاربری یا مخزن تنظیم نشده');
+  }
+  const token = getToken();
+  const headers = { 'Accept': 'application/vnd.github+json' };
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  const url = `${apiUrl()}?ref=${config.branch}&t=${Date.now()}`;
+  const res = await fetch(url, { headers, cache: 'no-store' });
+
+  if (res.status === 404) {
+    // فایل داده هنوز ساخته نشده
+    return { cards: [], sha: null, missing: true };
+  }
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || 'HTTP ' + res.status);
+  }
+  const data = await res.json();
+  const text = base64ToUtf8(data.content.replace(/\s/g, ''));
+  const parsed = JSON.parse(text);
+  return { cards: Array.isArray(parsed) ? parsed : [], sha: data.sha, missing: false };
+}
+
+async function pushToGitHub(message) {
+  if (!hasWriteAccess()) {
+    throw new Error('توکن گیت‌هاب تنظیم نشده - فقط می‌توانی اطلاعات را ببینی');
+  }
+  const content = JSON.stringify(cards);
+  const encoded = utf8ToBase64(content);
+  if (encoded.length > 40 * 1024 * 1024) {
+    throw new Error('حجم اطلاعات خیلی زیاد است - چند عکس را حذف کن');
+  }
+
+  const body = {
+    message: message || 'به‌روزرسانی ' + new Date().toLocaleString('fa-IR'),
+    content: encoded,
+    branch: config.branch
+  };
+  const sha = localStorage.getItem(KEY_SHA);
+  if (sha) body.sha = sha;
+
+  const res = await fetch(apiUrl(), {
+    method: 'PUT',
+    headers: {
+      'Authorization': `Bearer ${getToken()}`,
+      'Accept': 'application/vnd.github+json',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(body)
+  });
+
+  if (res.status === 409) {
+    // تعارض - یعنی یک جای دیگر اطلاعات عوض شده. اول sync می‌کنیم بعد دوباره تلاش می‌کنیم
+    const fresh = await fetchFromGitHub();
+    localStorage.setItem(KEY_SHA, fresh.sha || '');
+    return pushToGitHub(message);
+  }
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || 'HTTP ' + res.status);
+  }
+  const result = await res.json();
+  localStorage.setItem(KEY_SHA, result.content.sha);
+}
+
+async function syncFromGitHub(silent = false) {
+  if (!config.owner || !config.repo) return false;
+  if (isSyncing) return false;
+  isSyncing = true;
+
+  try {
+    if (!silent) setStatus('در حال دریافت...', 'info');
+    const result = await fetchFromGitHub();
+
+    if (result.missing) {
+      setStatus('فایل داده هنوز ساخته نشده', 'warn');
+      if (!hasWriteAccess()) {
+        showNotice('<b>توجه:</b> هنوز هیچ اطلاعاتی از طرف صاحب پرونده منتشر نشده است.');
+      }
+      return true;
+    }
+
+    cards = result.cards;
+    if (result.sha) localStorage.setItem(KEY_SHA, result.sha);
+    saveLocal();
+    render();
+    setStatus('آخرین اطلاعات دریافت شد', 'ok');
+    showNotice('');
+    return true;
+  } catch (e) {
+    console.error('sync error:', e);
+    setStatus('خطا در همگام‌سازی', 'err');
+    if (!silent) toast('خطا: ' + e.message, 4000);
+    return false;
+  } finally {
+    isSyncing = false;
+  }
+}
+
+async function pushCurrentState(message) {
+  if (!hasWriteAccess()) {
+    // بدون توکن فقط محلی ذخیره کن
+    saveLocal();
+    return true;
+  }
+  try {
+    setStatus('در حال ارسال...', 'info');
+    await pushToGitHub(message);
+    setStatus('ارسال شد ✓', 'ok');
+    return true;
+  } catch (e) {
+    console.error('push error:', e);
+    setStatus('خطا در ارسال', 'err');
+    toast('ارسال نشد: ' + e.message, 4000);
+    return false;
+  }
+}
+
+// ═══════════ نمایش کارت‌ها ═══════════
+function render() {
   const list = $('#list');
   list.innerHTML = '';
   $('#empty').style.display = cards.length ? 'none' : 'flex';
   $('#count').textContent = cards.length ? cards.length + ' نفر' : 'خالی';
+
+  const canEdit = hasWriteAccess();
 
   cards.forEach((c, i) => {
     const card = document.createElement('article');
@@ -289,10 +524,12 @@ function render(){
           ? `<div class="score">${esc(c.score)}<span>امتیاز</span></div>` : ''}
         <div class="title">${title}<small>${sub}</small></div>
         <div class="actions">
-          <button data-act="up"   ${i === 0 ? 'disabled' : ''} aria-label="بالا">▲</button>
-          <button data-act="down" ${i === cards.length - 1 ? 'disabled' : ''} aria-label="پایین">▼</button>
-          <button data-act="edit" aria-label="ویرایش">✎</button>
-          <button data-act="del"  aria-label="حذف">🗑</button>
+          ${canEdit ? `
+            <button data-act="up"   ${i === 0 ? 'disabled' : ''} aria-label="بالا">▲</button>
+            <button data-act="down" ${i === cards.length - 1 ? 'disabled' : ''} aria-label="پایین">▼</button>
+            <button data-act="edit" aria-label="ویرایش">✎</button>
+            <button data-act="del"  aria-label="حذف">🗑</button>
+          ` : ''}
         </div>
       </div>
       <div class="card-body">
@@ -307,10 +544,10 @@ function render(){
   });
 }
 
-/* ================= رویدادهای کارت ================= */
-$('#list').addEventListener('click', e => {
+// ═══════════ رویدادهای کارت ═══════════
+$('#list').addEventListener('click', async e => {
   const photo = e.target.closest('[data-photo]');
-  if (photo){
+  if (photo) {
     $('#lightboxImg').src = photo.src;
     $('#lightbox').classList.add('show');
     return;
@@ -324,29 +561,32 @@ $('#list').addEventListener('click', e => {
   if (i < 0) return;
   const act = btn.dataset.act;
 
-  if (act === 'up' && i > 0){
+  if (act === 'up' && i > 0) {
     [cards[i-1], cards[i]] = [cards[i], cards[i-1]];
-    save(); render(); window.scrollTo({top:0,behavior:'smooth'});
+    saveLocal(); render();
+    await pushCurrentState('جابجایی کارت');
   }
-  if (act === 'down' && i < cards.length - 1){
+  if (act === 'down' && i < cards.length - 1) {
     [cards[i+1], cards[i]] = [cards[i], cards[i+1]];
-    save(); render();
+    saveLocal(); render();
+    await pushCurrentState('جابجایی کارت');
   }
   if (act === 'edit') openForm(id);
-  if (act === 'del'){
-    if (confirm('این کارت حذف شود؟')){
-      cards.splice(i,1); save(); render();
-    }
+  if (act === 'del') {
+    if (!confirm('این کارت حذف شود؟')) return;
+    cards.splice(i, 1);
+    saveLocal(); render();
+    await pushCurrentState('حذف کارت');
   }
 });
 
 $('#lightbox').addEventListener('click', () => $('#lightbox').classList.remove('show'));
 
-/* ================= ساخت فرم ================= */
-function buildForm(){
+// ═══════════ ساخت فرم ═══════════
+function buildForm() {
   const box = $('#formFields');
   box.innerHTML = FIELDS.map(f => {
-    if (f.type === 'photo'){
+    if (f.type === 'photo') {
       return `<div class="field full">
         <label>عکس</label>
         <div class="photo-pick">
@@ -359,7 +599,7 @@ function buildForm(){
         </div>
       </div>`;
     }
-    if (f.type === 'textarea'){
+    if (f.type === 'textarea') {
       return `<div class="field full">
         <label>${f.label}</label>
         <textarea id="f_${f.k}" rows="3" placeholder="${f.ph || ''}"></textarea>
@@ -379,18 +619,18 @@ function buildForm(){
     try {
       curPhoto = await resizeImage(file, 420, 0.72);
       updatePhotoPrev();
-    } catch(err){ alert('عکس خوانده نشد.'); }
+    } catch(err) { alert('عکس خوانده نشد.'); }
     e.target.value = '';
   });
 }
 
-function updatePhotoPrev(){
+function updatePhotoPrev() {
   const img = $('#photoPrev');
-  if (curPhoto){ img.src = curPhoto; img.classList.add('on'); }
+  if (curPhoto) { img.src = curPhoto; img.classList.add('on'); }
   else { img.removeAttribute('src'); img.classList.remove('on'); }
 }
 
-function resizeImage(file, max, quality){
+function resizeImage(file, max, quality) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => {
@@ -412,8 +652,12 @@ function resizeImage(file, max, quality){
   });
 }
 
-/* ================= باز و بسته کردن فرم ================= */
-function openForm(id){
+// ═══════════ باز و بسته کردن فرم ═══════════
+function openForm(id) {
+  if (!hasWriteAccess()) {
+    toast('فقط صاحب پرونده می‌تواند تغییر دهد. ابتدا توکن را وارد کن.');
+    return;
+  }
   editingId = id || null;
   const c = id ? (cards.find(x => x.id === id) || {}) : {};
 
@@ -431,14 +675,14 @@ function openForm(id){
   $('#modal .sheet-body').scrollTop = 0;
 }
 
-function closeForm(){
+function closeForm() {
   $('#modal').classList.remove('show');
   document.body.style.overflow = '';
   editingId = null;
   curPhoto = '';
 }
 
-$('#btnSave').addEventListener('click', () => {
+$('#btnSave').addEventListener('click', async () => {
   const obj = { id: editingId || uid() };
   FIELDS.forEach(f => {
     if (f.type === 'photo') return;
@@ -448,15 +692,18 @@ $('#btnSave').addEventListener('click', () => {
   obj.photo = curPhoto;
 
   const empty = FIELDS.every(f => f.type === 'photo' || String(obj[f.k] || '').trim() === '');
-  if (empty){ alert('حداقل یک مورد را پر کنید.'); return; }
+  if (empty) { alert('حداقل یک مورد را پر کن.'); return; }
 
-  if (editingId){
+  if (editingId) {
     const i = cards.findIndex(x => x.id === editingId);
     if (i > -1) cards[i] = obj; else cards.push(obj);
   } else {
     cards.push(obj);
   }
-  save(); render(); closeForm();
+  saveLocal();
+  render();
+  closeForm();
+  await pushCurrentState(editingId ? 'ویرایش کارت' : 'افزودن کارت جدید');
 });
 
 $('#btnClose').addEventListener('click', closeForm);
@@ -465,21 +712,23 @@ $('#btnAdd').addEventListener('click', () => openForm(null));
 $('#fab').addEventListener('click', () => openForm(null));
 $('#modal').addEventListener('click', e => { if (e.target.id === 'modal') closeForm(); });
 
-/* ================= مرتب‌سازی ================= */
-$('#btnSort').addEventListener('click', () => {
-  if (cards.length < 2) return;
+// ═══════════ مرتب‌سازی ═══════════
+$('#btnSort').addEventListener('click', async () => {
+  if (!hasWriteAccess()) { toast('فقط حالت تماشا'); return; }
+  if (cards.length < 2) { toast('کارتی برای مرتب‌سازی نیست'); return; }
   if (!confirm('کارت‌ها بر اساس امتیاز (بیشترین به کمترین) مرتب شوند؟')) return;
-  cards.sort((a,b) => (parseFloat(b.score) || 0) - (parseFloat(a.score) || 0));
-  save(); render();
+  cards.sort((a, b) => (parseFloat(b.score) || 0) - (parseFloat(a.score) || 0));
+  saveLocal(); render();
+  await pushCurrentState('مرتب‌سازی با امتیاز');
 });
 
-/* ================= پشتیبان‌گیری / بازیابی ================= */
+// ═══════════ پشتیبان‌گیری / بازیابی ═══════════
 $('#btnExport').addEventListener('click', () => {
-  if (!cards.length){ alert('اطلاعاتی برای پشتیبان‌گیری وجود ندارد.'); return; }
-  const blob = new Blob([JSON.stringify(cards)], { type:'application/json' });
+  if (!cards.length) { alert('اطلاعاتی برای پشتیبان‌گیری نیست.'); return; }
+  const blob = new Blob([JSON.stringify(cards, null, 2)], { type: 'application/json' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = 'khastegari-' + new Date().toISOString().slice(0,10) + '.json';
+  a.download = 'khastegari-' + new Date().toISOString().slice(0, 10) + '.json';
   document.body.appendChild(a);
   a.click();
   a.remove();
@@ -492,83 +741,137 @@ $('#importInput').addEventListener('change', e => {
   const file = e.target.files && e.target.files[0];
   if (!file) return;
   const reader = new FileReader();
-  reader.onload = () => {
+  reader.onload = async () => {
     try {
       const arr = JSON.parse(reader.result);
       if (!Array.isArray(arr)) throw new Error('bad');
       const clean = arr.map(x => ({ id: x.id || uid(), ...x }));
 
-      if (cards.length){
-        const replace = confirm('اطلاعات فعلی جایگزین شود؟\n(تأیید = جایگزینی ، لغو = ادغام با اطلاعات فعلی)');
-        if (replace){
-          cards = clean;
-        } else {
-          clean.forEach(x => { if (!cards.some(y => y.id === x.id)) cards.push(x); });
-        }
+      if (cards.length) {
+        const replace = confirm('اطلاعات فعلی جایگزین شود؟\nتأیید = جایگزینی ، لغو = ادغام');
+        if (replace) cards = clean;
+        else clean.forEach(x => { if (!cards.some(y => y.id === x.id)) cards.push(x); });
       } else {
         cards = clean;
       }
-      save(); render();
+      saveLocal(); render();
+      await pushCurrentState('بازیابی از فایل پشتیبان');
       alert('بازیابی انجام شد ✔');
-    } catch(err){
-      alert('فایل معتبر نیست.');
-    }
+    } catch(err) { alert('فایل معتبر نیست.'); }
   };
   reader.readAsText(file);
   e.target.value = '';
 });
 
-/* ================= لینک اشتراک ================= */
-$('#btnShare').addEventListener('click', async () => {
-  if (!cards.length){ alert('اطلاعاتی برای ارسال وجود ندارد.'); return; }
+// ═══════════ دکمه به‌روزرسانی ═══════════
+$('#btnRefresh').addEventListener('click', async () => {
+  const ok = await syncFromGitHub();
+  if (ok) toast('اطلاعات به‌روزرسانی شد ✓');
+});
 
-  const withPhotos = !confirm('عکس‌ها هم در لینک ارسال شوند؟\n(تأیید = با عکس ، لغو = بدون عکس و سبک‌تر)');
+// ═══════════ تنظیمات ═══════════
+function openSettings() {
+  $('#setOwner').value = config.owner === 'YOUR_USERNAME' ? '' : config.owner;
+  $('#setRepo').value = config.repo;
+  $('#setBranch').value = config.branch;
+  $('#setToken').value = getToken() ? '••••••••' : '';
+  $('#settingsModal').classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+function closeSettings() {
+  $('#settingsModal').classList.remove('show');
+  document.body.style.overflow = '';
+}
 
-  const payload = cards.map(c => {
-    const copy = { ...c };
-    if (!withPhotos) delete copy.photo;
-    return copy;
-  });
+$('#btnSettings').addEventListener('click', openSettings);
+$('#btnSettingsClose').addEventListener('click', closeSettings);
+$('#btnSettingsCancel').addEventListener('click', closeSettings);
+$('#settingsModal').addEventListener('click', e => { if (e.target.id === 'settingsModal') closeSettings(); });
 
-  const base = location.href.split('#')[0];
-  const url = base + '#d=' + b64enc(JSON.stringify(payload));
+$('#btnSettingsSave').addEventListener('click', async () => {
+  const owner  = $('#setOwner').value.trim();
+  const repo   = $('#setRepo').value.trim();
+  const branch = $('#setBranch').value.trim() || 'main';
+  const tokenInput = $('#setToken').value.trim();
 
-  if (url.length > 100000){
-    alert('حجم اطلاعات زیاد است و لینک خیلی طولانی می‌شود.\nاز «پشتیبان‌گیری» استفاده کن و فایل را برای خانواده بفرست.');
-    return;
+  if (!owner || !repo) { alert('نام کاربری و مخزن الزامی است'); return; }
+
+  // توکن فقط اگر تغییر کرده ذخیره شود
+  if (tokenInput && !tokenInput.includes('••')) setToken(tokenInput);
+
+  config = { owner, repo, branch, path: 'data.json' };
+  saveConfig();
+  closeSettings();
+
+  // تست اتصال: اول دریافت، بعد ارسال
+  toast('در حال تست اتصال...', 1500);
+  const okRead = await syncFromGitHub();
+  if (!okRead) { alert('دریافت از گیت‌هاب ناموفق بود. توکن یا نام مخزن را بررسی کن.'); return; }
+
+  if (hasWriteAccess()) {
+    const okWrite = await pushCurrentState('تست اتصال');
+    if (okWrite) alert('اتصال برقرار شد ✔\nحالا می‌توانی اطلاعات را ثبت کنی.');
+    else alert('دریافت انجام شد اما ارسال ناموفق بود. مطمئن شو توکن دسترسی «Contents: Read and write» دارد.');
+  } else {
+    alert('حالت تماشا فعال است (بدون توکن). فقط خواندن از گیت‌هاب انجام می‌شود.');
   }
+  updateUIForMode();
+});
 
-  try {
-    if (navigator.share){
-      await navigator.share({ title:'اطلاعات مقایسه', url });
-    } else {
-      await navigator.clipboard.writeText(url);
-      alert('لینک کپی شد ✔ آن را در واتساپ/تلگرام بفرست.');
+// ═══════════ حالت تماشا / ویرایش ═══════════
+function updateUIForMode() {
+  const canEdit = hasWriteAccess();
+  $('#btnAdd').style.display = canEdit ? '' : 'none';
+  $('#fab').style.display = canEdit ? '' : 'none';
+  $('#btnSort').style.display = canEdit ? '' : 'none';
+
+  if (!canEdit && config.owner !== 'YOUR_USERNAME') {
+    showNotice('<b>حالت تماشا:</b> شما فقط می‌توانید اطلاعات را ببینید. برای ویرایش، صاحب پرونده باید توکن را روی دستگاه خودش وارد کند.');
+  } else if (config.owner === 'YOUR_USERNAME') {
+    showNotice('<b>تنظیم اولیه:</b> روی دکمه «⚙️ تنظیمات» بزن و نام کاربری گیت‌هاب، مخزن و توکن را وارد کن.');
+  } else {
+    showNotice('');
+  }
+}
+
+// ═══════════ به‌روزرسانی خودکار سبک ═══════════
+// وقتی برگه دوباره فعال شد، اطلاعات را تازه کن
+let lastHidden = 0;
+document.addEventListener('visibilitychange', async () => {
+  if (document.visibilityState === 'hidden') { lastHidden = Date.now(); return; }
+  if (document.visibilityState === 'visible' && lastHidden) {
+    const elapsed = Date.now() - lastHidden;
+    if (elapsed > 15000) { // بیش از 15 ثانیه پنهان بوده
+      if (!$('#modal').classList.contains('show') && !$('#settingsModal').classList.contains('show')) {
+        await syncFromGitHub(true);
+      }
     }
-  } catch(err){
-    prompt('لینک را کپی کن:', url);
   }
 });
 
-/* ================= دریافت اطلاعات از لینک ================= */
-(function checkHash(){
-  const m = location.hash.match(/^#d=(.+)$/);
-  if (!m) return;
-  try {
-    const arr = JSON.parse(b64dec(m[1]));
-    if (!Array.isArray(arr)) return;
-    if (confirm('اطلاعات جدیدی دریافت شد. بارگذاری شود؟\n(اطلاعات فعلی جایگزین می‌شود)')){
-      cards = arr.map(x => ({ id: x.id || uid(), ...x }));
-      save();
-    }
-    history.replaceState(null, '', location.pathname + location.search);
-  } catch(e){ /* نادیده */ }
-})();
+// همچنین هر 3 دقیقه یکبار (برای حالتی که برگه باز است)
+setInterval(async () => {
+  if (document.visibilityState !== 'visible') return;
+  if ($('#modal').classList.contains('show')) return;
+  if ($('#settingsModal').classList.contains('show')) return;
+  if (isSyncing) return;
+  await syncFromGitHub(true);
+}, 3 * 60 * 1000);
 
-/* ================= شروع ================= */
-buildForm();
-load();
-render();
+// ═══════════ راه‌اندازی ═══════════
+(async function init() {
+  loadConfig();
+  loadLocal();
+  buildForm();
+  render();
+  updateUIForMode();
+
+  if (config.owner !== 'YOUR_USERNAME' && config.repo) {
+    await syncFromGitHub();
+  } else {
+    setStatus('در انتظار تنظیمات', 'warn');
+  }
+})();
 </script>
 </body>
 </html>
