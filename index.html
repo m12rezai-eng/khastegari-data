@@ -197,7 +197,6 @@
 
 <button class="fab" id="fab" aria-label="افزودن">＋</button>
 
-<!-- فرم افزودن/ویرایش -->
 <div class="modal" id="modal">
   <div class="sheet">
     <div class="sheet-head">
@@ -214,7 +213,6 @@
   </div>
 </div>
 
-<!-- تنظیمات گیت‌هاب -->
 <div class="modal" id="settingsModal">
   <div class="sheet">
     <div class="sheet-head">
@@ -224,12 +222,12 @@
     <div class="sheet-body">
       <div class="field full">
         <label>نام کاربری گیت‌هاب</label>
-        <input id="setOwner" placeholder="مثلاً: ali-ahmadi" />
+        <input id="setOwner" placeholder="m12rezai-eng" />
         <small>باید همان چیزی باشد که در بالای فایل تنظیم کردید.</small>
       </div>
       <div class="field full">
         <label>نام مخزن</label>
-        <input id="setRepo" placeholder="مثلاً: khastegari-data" />
+        <input id="setRepo" placeholder="khastegari-data" />
       </div>
       <div class="field full">
         <label>شاخه</label>
@@ -253,26 +251,19 @@
 
 <script>
 /* ═══════════════════════════════════════════════════════════════
-   ⚙️  تنظیمات ثابت - این دو خط را حتماً پر کنید
-   ═══════════════════════════════════════════════════════════════
-   بعد از اینکه این دو مقدار را درست کردید، فایل را در همان
-   مخزن گیت‌هاب آپلود کنید. خانواده فقط آدرس GitHub Pages را
-   باز می‌کنند و همین مقادیر برایشان استفاده می‌شود.
+   ⚙️  تنظیمات - از قبل پر شده. نیازی به تغییر نیست.
    ═══════════════════════════════════════════════════════════════ */
-const GH_OWNER = 'YOUR_USERNAME';        // ← نام کاربری گیت‌هاب خودت
-const GH_REPO  = 'khastegari-data';      // ← نام مخزنی که ساختی
+const GH_OWNER = 'm12rezai-eng';
+const GH_REPO  = 'khastegari-data';
 /* ═══════════════════════════════════════════════════════════════ */
 
-// بقیه تنظیمات پیش‌فرض (معمولاً نیازی به تغییر ندارند)
 const DEFAULTS = { owner: GH_OWNER, repo: GH_REPO, branch: 'main', path: 'data.json' };
 
-// کلیدهای حافظه مرورگر
 const KEY_CARDS  = 'khastegari_cards_v2';
 const KEY_CONFIG = 'khastegari_config_v2';
 const KEY_TOKEN  = 'khastegari_token_v2';
 const KEY_SHA    = 'khastegari_sha_v2';
 
-// ═══════════ ابزارهای کمکی ═══════════
 const $ = s => document.querySelector(s);
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
@@ -314,7 +305,6 @@ function showNotice(html) {
   else bar.style.display = 'none';
 }
 
-// ═══════════ تنظیمات و توکن ═══════════
 let config = { ...DEFAULTS };
 function loadConfig() {
   try {
@@ -332,7 +322,6 @@ function setToken(t) {
 }
 function hasWriteAccess() { return !!getToken(); }
 
-// ═══════════ مدل داده ═══════════
 const FIELDS = [
   { k:'score',  label:'امتیاز',        type:'number',   ph:'۰ تا ۱۰۰' },
   { k:'code',   label:'کد فرم',        type:'text',     ph:'مثلاً ۱۲۳' },
@@ -369,7 +358,6 @@ function saveLocal() {
   catch(e) { toast('حافظه پر است - چند عکس حذف کن'); }
 }
 
-// ═══════════ ارتباط با گیت‌هاب ═══════════
 function apiUrl() {
   return `https://api.github.com/repos/${config.owner}/${config.repo}/contents/${config.path}`;
 }
@@ -386,7 +374,6 @@ async function fetchFromGitHub() {
   const res = await fetch(url, { headers, cache: 'no-store' });
 
   if (res.status === 404) {
-    // فایل داده هنوز ساخته نشده
     return { cards: [], sha: null, missing: true };
   }
   if (!res.ok) {
@@ -428,7 +415,6 @@ async function pushToGitHub(message) {
   });
 
   if (res.status === 409) {
-    // تعارض - یعنی یک جای دیگر اطلاعات عوض شده. اول sync می‌کنیم بعد دوباره تلاش می‌کنیم
     const fresh = await fetchFromGitHub();
     localStorage.setItem(KEY_SHA, fresh.sha || '');
     return pushToGitHub(message);
@@ -477,7 +463,6 @@ async function syncFromGitHub(silent = false) {
 
 async function pushCurrentState(message) {
   if (!hasWriteAccess()) {
-    // بدون توکن فقط محلی ذخیره کن
     saveLocal();
     return true;
   }
@@ -494,7 +479,6 @@ async function pushCurrentState(message) {
   }
 }
 
-// ═══════════ نمایش کارت‌ها ═══════════
 function render() {
   const list = $('#list');
   list.innerHTML = '';
@@ -544,7 +528,6 @@ function render() {
   });
 }
 
-// ═══════════ رویدادهای کارت ═══════════
 $('#list').addEventListener('click', async e => {
   const photo = e.target.closest('[data-photo]');
   if (photo) {
@@ -582,7 +565,6 @@ $('#list').addEventListener('click', async e => {
 
 $('#lightbox').addEventListener('click', () => $('#lightbox').classList.remove('show'));
 
-// ═══════════ ساخت فرم ═══════════
 function buildForm() {
   const box = $('#formFields');
   box.innerHTML = FIELDS.map(f => {
@@ -652,7 +634,6 @@ function resizeImage(file, max, quality) {
   });
 }
 
-// ═══════════ باز و بسته کردن فرم ═══════════
 function openForm(id) {
   if (!hasWriteAccess()) {
     toast('فقط صاحب پرونده می‌تواند تغییر دهد. ابتدا توکن را وارد کن.');
@@ -712,7 +693,6 @@ $('#btnAdd').addEventListener('click', () => openForm(null));
 $('#fab').addEventListener('click', () => openForm(null));
 $('#modal').addEventListener('click', e => { if (e.target.id === 'modal') closeForm(); });
 
-// ═══════════ مرتب‌سازی ═══════════
 $('#btnSort').addEventListener('click', async () => {
   if (!hasWriteAccess()) { toast('فقط حالت تماشا'); return; }
   if (cards.length < 2) { toast('کارتی برای مرتب‌سازی نیست'); return; }
@@ -722,7 +702,6 @@ $('#btnSort').addEventListener('click', async () => {
   await pushCurrentState('مرتب‌سازی با امتیاز');
 });
 
-// ═══════════ پشتیبان‌گیری / بازیابی ═══════════
 $('#btnExport').addEventListener('click', () => {
   if (!cards.length) { alert('اطلاعاتی برای پشتیبان‌گیری نیست.'); return; }
   const blob = new Blob([JSON.stringify(cards, null, 2)], { type: 'application/json' });
@@ -763,13 +742,11 @@ $('#importInput').addEventListener('change', e => {
   e.target.value = '';
 });
 
-// ═══════════ دکمه به‌روزرسانی ═══════════
 $('#btnRefresh').addEventListener('click', async () => {
   const ok = await syncFromGitHub();
   if (ok) toast('اطلاعات به‌روزرسانی شد ✓');
 });
 
-// ═══════════ تنظیمات ═══════════
 function openSettings() {
   $('#setOwner').value = config.owner === 'YOUR_USERNAME' ? '' : config.owner;
   $('#setRepo').value = config.repo;
@@ -796,14 +773,12 @@ $('#btnSettingsSave').addEventListener('click', async () => {
 
   if (!owner || !repo) { alert('نام کاربری و مخزن الزامی است'); return; }
 
-  // توکن فقط اگر تغییر کرده ذخیره شود
   if (tokenInput && !tokenInput.includes('••')) setToken(tokenInput);
 
   config = { owner, repo, branch, path: 'data.json' };
   saveConfig();
   closeSettings();
 
-  // تست اتصال: اول دریافت، بعد ارسال
   toast('در حال تست اتصال...', 1500);
   const okRead = await syncFromGitHub();
   if (!okRead) { alert('دریافت از گیت‌هاب ناموفق بود. توکن یا نام مخزن را بررسی کن.'); return; }
@@ -818,7 +793,6 @@ $('#btnSettingsSave').addEventListener('click', async () => {
   updateUIForMode();
 });
 
-// ═══════════ حالت تماشا / ویرایش ═══════════
 function updateUIForMode() {
   const canEdit = hasWriteAccess();
   $('#btnAdd').style.display = canEdit ? '' : 'none';
@@ -834,14 +808,12 @@ function updateUIForMode() {
   }
 }
 
-// ═══════════ به‌روزرسانی خودکار سبک ═══════════
-// وقتی برگه دوباره فعال شد، اطلاعات را تازه کن
 let lastHidden = 0;
 document.addEventListener('visibilitychange', async () => {
   if (document.visibilityState === 'hidden') { lastHidden = Date.now(); return; }
   if (document.visibilityState === 'visible' && lastHidden) {
     const elapsed = Date.now() - lastHidden;
-    if (elapsed > 15000) { // بیش از 15 ثانیه پنهان بوده
+    if (elapsed > 15000) {
       if (!$('#modal').classList.contains('show') && !$('#settingsModal').classList.contains('show')) {
         await syncFromGitHub(true);
       }
@@ -849,7 +821,6 @@ document.addEventListener('visibilitychange', async () => {
   }
 });
 
-// همچنین هر 3 دقیقه یکبار (برای حالتی که برگه باز است)
 setInterval(async () => {
   if (document.visibilityState !== 'visible') return;
   if ($('#modal').classList.contains('show')) return;
@@ -858,7 +829,6 @@ setInterval(async () => {
   await syncFromGitHub(true);
 }, 3 * 60 * 1000);
 
-// ═══════════ راه‌اندازی ═══════════
 (async function init() {
   loadConfig();
   loadLocal();
