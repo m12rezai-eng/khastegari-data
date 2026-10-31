@@ -177,10 +177,10 @@ const GH_OWNER = 'm12rezai-eng';
 const GH_REPO  = 'khastegari-data';
 const DEFAULTS = { owner: GH_OWNER, repo: GH_REPO, branch: 'main', path: 'data.json' };
 
-const KEY_CARDS  = 'khastegari_cards_v3';
-const KEY_CONFIG = 'khastegari_config_v3';
-const KEY_TOKEN  = 'khastegari_token_v3';
-const KEY_SHA    = 'khastegari_sha_v3';
+const KEY_CARDS  = 'khastegari_cards_v4';
+const KEY_CONFIG = 'khastegari_config_v4';
+const KEY_TOKEN  = 'khastegari_token_v4';
+const KEY_SHA    = 'khastegari_sha_v4';
 
 const $ = s => document.querySelector(s);
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
@@ -251,11 +251,20 @@ async function fetchFromGitHub(){
 
 async function pushToGitHub(message){
   if(!hasWriteAccess())throw new Error('توکن تنظیم نشده');
+  
+  // اطمینان از اینکه sha به‌روز است
+  let sha = localStorage.getItem(KEY_SHA);
+  if(!sha){
+     try {
+        const fresh = await fetchFromGitHub();
+        if(fresh.sha) { sha = fresh.sha; localStorage.setItem(KEY_SHA, sha); }
+     } catch(e) { /* فایل ممکن است وجود نداشته باشد */ }
+  }
+
   const content=JSON.stringify(cards);
   const encoded=utf8ToBase64(content);
 
   const body={message:message||'به‌روزرسانی '+new Date().toLocaleString('fa-IR'),content:encoded,branch:config.branch};
-  const sha=localStorage.getItem(KEY_SHA);
   if(sha)body.sha=sha;
 
   const res=await fetch(apiUrl(),{
@@ -264,13 +273,24 @@ async function pushToGitHub(message){
     body:JSON.stringify(body)
   });
 
-  if(res.status===409){const fresh=await fetchFromGitHub();localStorage.setItem(KEY_SHA,fresh.sha||'');return pushToGitHub(message)}
+  // اگر تداخل وجود داشت (409) یا خطای sha داد (422)
+  if(res.status===409 || res.status===422){
+    const fresh=await fetchFromGitHub();
+    localStorage.setItem(KEY_SHA,fresh.sha||'');
+    // ادغام کارت‌های ریموت با محلی‌ها قبل از تلاش دوباره
+    const remoteIds = new Set(fresh.cards.map(c=>c.id));
+    fresh.cards.forEach(rc => {
+       if(!cards.some(lc => lc.id === rc.id)) cards.push(rc);
+    });
+    saveLocal();
+    return pushToGitHub(message);
+  }
+  
   if(!res.ok){const err=await res.json().catch(()=>({}));throw new Error(err.message||'HTTP '+res.status)}
   const result=await res.json();
   localStorage.setItem(KEY_SHA,result.content.sha);
 }
 
-/* ادغام: کارت‌های محلی و ریموت را با هم ترکیب می‌کند، هیچ کارتی گم نمی‌شود */
 async function syncMergeFromGitHub(silent=false){
   if(!config.owner||!config.repo)return false;
   if(isSyncing)return false;
@@ -295,7 +315,7 @@ async function syncMergeFromGitHub(silent=false){
     updateCounts();
 
     if(onlyLocal.length>0&&silent){
-      showNotice(`<b>توجه:</b> ${onlyLocal.length} کارت روی گوشی هست که در گیت‌هاب نیست. اگر می‌خواهی همه جا ببینند، روی «🔄 به‌روزرسانی» نزن و از «📤 ارسال کامل» در تنظیمات استفاده کن.`);
+      showNotice(`<b>توجه:</b> ${onlyLocal.length} کارت روی گوشی هست که در گیت‌هاب نیست. اگر می‌خواهی همه جا ببینند، از «📤 ارسال کامل» استفاده کن.`);
     }else{
       showNotice('');
     }
@@ -310,7 +330,6 @@ async function syncMergeFromGitHub(silent=false){
   }finally{isSyncing=false}
 }
 
-/* دریافت کامل: ریموت جایگزین محلی می‌شود (فقط با تأیید) */
 async function forcePullFromGitHub(){
   if(!confirm('اطلاعات گوشی با اطلاعات گیت‌هاب جایگزین شود؟\n(کارت‌هایی که فقط روی گوشی هستند حذف می‌شوند)'))return;
   setStatus('دریافت کامل...','info');
@@ -330,7 +349,6 @@ async function forcePullFromGitHub(){
   }
 }
 
-/* ارسال کامل: محلی جایگزین ریموت می‌شود */
 async function forcePushToGitHub(){
   if(!hasWriteAccess()){alert('توکن تنظیم نشده');return}
   if(!confirm('اطلاعات گوشی به گیت‌هاب فرستاده شود؟\n('+cards.length+' کارت جایگزین می‌شود)'))return;
@@ -546,7 +564,6 @@ function openSettings(){
   $('#cntRemote').textContent='؟';
   $('#settingsModal').classList.add('show');
   document.body.style.overflow='hidden';
-  // خواندن تعداد ریموت در پس‌زمینه
   fetchFromGitHub().then(r=>{
     $('#cntRemote').textContent=r.cards.length;
   }).catch(()=>{$('#cntRemote').textContent='خطا'});
