@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<meta name="theme-color" content="#0f766e" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-title" content="خواستگاری" />
+<title>مقایسه گزینه‌های ازدواج</title>
+<link rel="manifest" href='data:application/manifest+json,{"name":"Khastegari","short_name":"Khastegari","start_url":".","display":"standalone","background_color":"%23f1f5f9","theme_color":"%230f766e"}'>
+<style>
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:"Vazirmatn","IRANSans",system-ui,-apple-system,"Segoe UI",Tahoma,sans-serif;
+    background:#eef2f7;color:#0f172a;padding-bottom:110px;
+    -webkit-font-smoothing:antialiased;
+  }
+  /* ---------- Header ---------- */
+  header{
+    position:sticky;top:0;z-index:20;color:#fff;
+    background:linear-gradient(135deg,#0f766e,#0e7490);
+    padding:calc(14px + env(safe-area-inset-top)) 16px 14px;
+    box-shadow:0 6px 18px rgba(15,23,42,.18);
+    display:flex;align-items:center;gap:10px;
+  }
+  header h1{margin:0;font-size:16px;font-weight:800;letter-spacing:.2px}
+  header .sub{font-size:11px;opacity:.85;margin-top:2px}
+  .count{
+    margin-inline-start:auto;background:rgba(255,255,255,.18);
+    border:1px solid rgba(255,255,255,.28);
+    border-radius:999px;padding:5px 12px;font-size:11.5px;font-weight:700;white-space:nowrap;
+  }
+  /* ---------- Toolbar ---------- */
+  .toolbar{
+    display:flex;gap:8px;overflow-x:auto;padding:10px 14px;
+    background:#fff;border-bottom:1px solid #e2e8f0;scrollbar-width:none;
+  }
+  .toolbar::-webkit-scrollbar{display:none}
+  .btn{
+    border:1px solid #cbd5e1;background:#fff;color:#334155;border-radius:11px;
+    padding:8px 12px;font-size:12.5px;font-family:inherit;font-weight:600;
+    display:inline-flex;align-items:center;gap:6px;white-space:nowrap;cursor:pointer;
+    transition:.15s;
+  }
+  .btn:active{transform:scale(.96);background:#f1f5f9}
+  .btn.primary{background:#0f766e;border-color:#0f766e;color:#fff}
+  .btn.primary:active{background:#0b5f59}
+  /* ---------- Cards ---------- */
+  #list{padding:4px 0}
+  .card{
+    background:#fff;border:1px solid #e2e8f0;border-radius:18px;margin:12px 14px;
+    box-shadow:0 3px 12px rgba(15,23,42,.07);overflow:hidden;
+  }
+  .card-top{
+    display:flex;align-items:center;gap:10px;padding:10px 12px;
+    background:#f8fafc;border-bottom:1px solid #eef2f7;
+  }
+  .score{
+    min-width:54px;text-align:center;background:#0f766e;color:#fff;
+    border-radius:13px;padding:6px 6px;font-weight:800;font-size:15px;line-height:1;
+    flex:0 0 auto;
+  }
+  .score span{display:block;font-size:9px;font-weight:500;opacity:.85;margin-top:3px}
+  .title{flex:1;font-size:14px;font-weight:800;min-width:0}
+  .title small{display:block;font-weight:500;font-size:11px;color:#64748b;margin-top:3px}
+  .actions{display:flex;gap:4px;flex:0 0 auto}
+  .actions button{
+    width:31px;height:31px;border-radius:9px;border:1px solid #e2e8f0;background:#fff;
+    color:#475569;font-size:13px;display:grid;place-items:center;cursor:pointer;
+    transition:.15s;padding:0;
+  }
+  .actions button:active{background:#f1f5f9;transform:scale(.94)}
+  .actions button:disabled{opacity:.3;pointer-events:none}
+  .card-body{display:flex;gap:10px;padding:11px 12px 12px}
+  .photo{
+    width:78px;height:100px;border-radius:13px;object-fit:cover;flex:0 0 auto;
+    background:#e2e8f0;cursor:pointer;
+  }
+  .photo.ph{
+    display:grid;place-items:center;font-size:10px;color:#94a3b8;
+    border:1px dashed #cbd5e1;background:#f8fafc;text-align:center;cursor:default;
+  }
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:7px 10px;flex:1;min-width:0}
+  .cell{min-width:0;font-size:12px;line-height:1.45}
+  .cell .k{display:block;color:#64748b;font-size:10.5px}
+  .cell .v{font-weight:700;overflow-wrap:anywhere;display:block}
+  .cell.muted{color:#94a3b8;grid-column:1/-1;font-size:12px}
+  .notes{
+    padding:9px 12px 12px;font-size:12px;color:#334155;line-height:1.7;
+    border-top:1px dashed #e2e8f0;margin-top:2px;
+  }
+  .notes b{color:#0f766e;font-weight:700}
+  /* ---------- Empty ---------- */
+  #empty{display:none;flex-direction:column;align-items:center;gap:8px;padding:60px 24px;text-align:center;color:#94a3b8}
+  #empty .ico{font-size:44px}
+  #empty p{margin:0;font-size:13px;line-height:1.8}
+  /* ---------- FAB ---------- */
+  .fab{
+    position:fixed;left:16px;bottom:calc(18px + env(safe-area-inset-bottom));
+    width:58px;height:58px;border-radius:50%;border:none;cursor:pointer;
+    background:linear-gradient(135deg,#0f766e,#0e7490);color:#fff;font-size:28px;
+    box-shadow:0 8px 22px rgba(15,118,110,.42);z-index:30;display:grid;place-items:center;
+    transition:.15s;
+  }
+  .fab:active{transform:scale(.93)}
+  /* ---------- Modal ---------- */
+  .modal{
+    position:fixed;inset:0;background:rgba(15,23,42,.5);z-index:50;
+    display:none;align-items:flex-end;justify-content:center;backdrop-filter:blur(2px);
+  }
+  .modal.show{display:flex}
+  .sheet{
+    background:#fff;width:100%;max-width:540px;max-height:93vh;
+    border-radius:22px 22px 0 0;display:flex;flex-direction:column;
+    animation:up .25s cubic-bezier(.2,.8,.3,1);
+  }
+  @keyframes up{from{transform:translateY(40px);opacity:.6}to{transform:translateY(0);opacity:1}}
+  .sheet-head{
+    display:flex;align-items:center;padding:14px 16px;border-bottom:1px solid #eef2f7;
+  }
+  .sheet-head h2{margin:0;font-size:15px;font-weight:800;flex:1}
+  .sheet-head button{
+    width:32px;height:32px;border-radius:10px;border:1px solid #e2e8f0;background:#fff;
+    color:#64748b;font-size:15px;cursor:pointer;
+  }
+  .sheet-body{padding:14px 16px;overflow-y:auto;flex:1;-webkit-overflow-scrolling:touch}
+  .fields{display:grid;grid-template-columns:1fr 1fr;gap:0 10px}
+  .field{margin-bottom:11px;min-width:0}
+  .field.full{grid-column:1/-1}
+  .field label{display:block;font-size:12px;font-weight:700;color:#475569;margin-bottom:5px}
+  .field input,.field textarea{
+    width:100%;padding:10px 12px;border:1px solid #cbd5e1;border-radius:11px;
+    font-family:inherit;font-size:16px;background:#f8fafc;color:#0f172a;
+  }
+  .field textarea{resize:vertical;min-height:70px;font-size:15px}
+  .field input:focus,.field textarea:focus{
+    outline:none;border-color:#0f766e;background:#fff;box-shadow:0 0 0 3px rgba(15,118,110,.13);
+  }
+  .photo-pick{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .photo-pick img{
+    width:74px;height:94px;object-fit:cover;border-radius:12px;background:#e2e8f0;
+    border:1px solid #e2e8f0;display:none;
+  }
+  .photo-pick img.on{display:block}
+  .sheet-foot{
+    display:flex;gap:8px;padding:12px 16px calc(12px + env(safe-area-inset-bottom));
+    border-top:1px solid #eef2f7;background:#fff;
+  }
+  .sheet-foot .btn{flex:1;justify-content:center;padding:12px;font-size:14px}
+  /* ---------- Lightbox ---------- */
+  .lightbox{
+    position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:100;
+    display:none;place-items:center;padding:20px;
+  }
+  .lightbox.show{display:grid}
+  .lightbox img{max-width:100%;max-height:88vh;border-radius:14px}
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>مقایسه گزینه‌های ازدواج</h1>
+    <div class="sub">اطلاعات هر نفر در یک کارت مجزا</div>
+  </div>
+  <div class="count" id="count">خالی</div>
+</header>
+
+<div class="toolbar">
+  <button class="btn primary" id="btnAdd">➕ افزودن</button>
+  <button class="btn" id="btnSort">⇅ مرتب‌سازی با امتیاز</button>
+  <button class="btn" id="btnShare">🔗 لینک اشتراک</button>
+  <button class="btn" id="btnExport">📤 پشتیبان‌گیری</button>
+  <button class="btn" id="btnImport">📥 بازیابی</button>
+  <input type="file" id="importInput" accept="application/json,.json" hidden />
+</div>
+
+<div id="empty">
+  <div class="ico">🗂️</div>
+  <p>هنوز کارتی ثبت نشده.<br>با دکمه «افزودن» شروع کن.</p>
+</div>
+
+<main id="list"></main>
+
+<button class="fab" id="fab" aria-label="افزودن">＋</button>
+
+<!-- Modal -->
+<div class="modal" id="modal">
+  <div class="sheet">
+    <div class="sheet-head">
+      <h2 id="mTitle">افزودن</h2>
+      <button id="btnClose" aria-label="بستن">✕</button>
+    </div>
+    <div class="sheet-body">
+      <div class="fields" id="formFields"></div>
+    </div>
+    <div class="sheet-foot">
+      <button class="btn primary" id="btnSave">ذخیره</button>
+      <button class="btn" id="btnCancel">انصراف</button>
+    </div>
+  </div>
+</div>
+
+<div class="lightbox" id="lightbox"><img id="lightboxImg" alt="" /></div>
+
+<script>
+/* ================= تنظیمات فیلدها ================= */
+const FIELDS = [
+  { k:'score',  label:'امتیاز',        type:'number', ph:'۰ تا ۱۰۰' },
+  { k:'code',   label:'کد فرم',        type:'text',   ph:'مثلاً ۱۲۳' },
+  { k:'age',    label:'سن',            type:'number', ph:'مثلاً ۲۸' },
+  { k:'exp',    label:'سابقه',         type:'text',   ph:'مثلاً ۲ سال' },
+  { k:'degree', label:'مدرک',          type:'text',   ph:'لیسانس' },
+  { k:'job',    label:'شغل',           type:'text',   ph:'—' },
+  { k:'height', label:'قد',            type:'number', ph:'سانتی‌متر' },
+  { k:'weight', label:'وزن',           type:'number', ph:'کیلوگرم' },
+  { k:'city',   label:'ساکن',          type:'text',   ph:'شهر' },
+  { k:'family', label:'نفرات',         type:'text',   ph:'تعداد خانواده' },
+  { k:'cover',  label:'پوشش',          type:'text',   ph:'—' },
+  { k:'dowry',  label:'جهیزیه',        type:'text',   ph:'—' },
+  { k:'skin',   label:'پوست',          type:'text',   ph:'—' },
+  { k:'father', label:'پدر',           type:'text',   ph:'شغل / وضعیت' },
+  { k:'mother', label:'مادر',          type:'text',   ph:'شغل / وضعیت' },
+  { k:'photo',  label:'عکس',           type:'photo' },
+  { k:'notes',  label:'سایر توضیحات',  type:'textarea', ph:'هر نکته‌ای که مهم است...' }
+];
+const HIDDEN_IN_GRID = ['score','code','photo','notes'];
+
+/* ================= ابزارها ================= */
+const $ = s => document.querySelector(s);
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+
+function b64enc(str){
+  const bytes = new TextEncoder().encode(str);
+  let bin = '';
+  for (let i=0;i<bytes.length;i++) bin += String.fromCharCode(bytes[i]);
+  return btoa(bin).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+}
+function b64dec(s){
+  s = s.replace(/-/g,'+').replace(/_/g,'/');
+  const bin = atob(s);
+  const bytes = Uint8Array.from(bin, c => c.charCodeAt(0));
+  return new TextDecoder().decode(bytes);
+}
+
+/* ================= ذخیره‌سازی ================= */
+const KEY = 'khastegari_v1';
+let cards = [];
+let editingId = null;
+let curPhoto = '';
+
+function save(){
+  try { localStorage.setItem(KEY, JSON.stringify(cards)); }
+  catch(e){ alert('حافظه گوشی پر شد. چند عکس را حذف کن یا از فایل پشتیبان استفاده کن.'); }
+}
+function load(){
+  try { cards = JSON.parse(localStorage.getItem(KEY) || '[]'); }
+  catch(e){ cards = []; }
+  if (!Array.isArray(cards)) cards = [];
+}
+
+/* ================= رندر کارت‌ها ================= */
+function render(){
+  const list = $('#list');
+  list.innerHTML = '';
+  $('#empty').style.display = cards.length ? 'none' : 'flex';
+  $('#count').textContent = cards.length ? cards.length + ' نفر' : 'خالی';
+
+  cards.forEach((c, i) => {
+    const card = document.createElement('article');
+    card.className = 'card';
+    card.dataset.id = c.id;
+
+    const photoSrc = (typeof c.photo === 'string' && c.photo.startsWith('data:image/')) ? c.photo : '';
+    const title = c.code ? 'کد فرم ' + esc(c.code) : 'بدون کد';
+    const sub = [c.age ? c.age + ' سال' : '', c.city || ''].filter(Boolean).map(esc).join(' • ');
+
+    const cells = FIELDS
+      .filter(f => !HIDDEN_IN_GRID.includes(f.k))
+      .filter(f => String(c[f.k] ?? '').trim() !== '')
+      .map(f => `<div class="cell"><span class="k">${f.label}</span><span class="v">${esc(c[f.k])}</span></div>`)
+      .join('');
+
+    card.innerHTML = `
+      <div class="card-top">
+        ${String(c.score ?? '').trim() !== ''
+          ? `<div class="score">${esc(c.score)}<span>امتیاز</span></div>` : ''}
+        <div class="title">${title}<small>${sub}</small></div>
+        <div class="actions">
+          <button data-act="up"   ${i === 0 ? 'disabled' : ''} aria-label="بالا">▲</button>
+          <button data-act="down" ${i === cards.length - 1 ? 'disabled' : ''} aria-label="پایین">▼</button>
+          <button data-act="edit" aria-label="ویرایش">✎</button>
+          <button data-act="del"  aria-label="حذف">🗑</button>
+        </div>
+      </div>
+      <div class="card-body">
+        ${photoSrc
+          ? `<img class="photo" src="${photoSrc}" alt="عکس" data-photo="1" />`
+          : `<div class="photo ph">بدون<br>عکس</div>`}
+        <div class="grid">${cells || '<div class="cell muted">اطلاعاتی ثبت نشده است</div>'}</div>
+      </div>
+      ${String(c.notes ?? '').trim() ? `<div class="notes"><b>سایر توضیحات:</b> ${esc(c.notes)}</div>` : ''}
+    `;
+    list.appendChild(card);
+  });
+}
+
+/* ================= رویدادهای کارت ================= */
+$('#list').addEventListener('click', e => {
+  const photo = e.target.closest('[data-photo]');
+  if (photo){
+    $('#lightboxImg').src = photo.src;
+    $('#lightbox').classList.add('show');
+    return;
+  }
+  const btn = e.target.closest('button[data-act]');
+  if (!btn) return;
+
+  const card = btn.closest('.card');
+  const id = card.dataset.id;
+  const i = cards.findIndex(x => x.id === id);
+  if (i < 0) return;
+  const act = btn.dataset.act;
+
+  if (act === 'up' && i > 0){
+    [cards[i-1], cards[i]] = [cards[i], cards[i-1]];
+    save(); render(); window.scrollTo({top:0,behavior:'smooth'});
+  }
+  if (act === 'down' && i < cards.length - 1){
+    [cards[i+1], cards[i]] = [cards[i], cards[i+1]];
+    save(); render();
+  }
+  if (act === 'edit') openForm(id);
+  if (act === 'del'){
+    if (confirm('این کارت حذف شود؟')){
+      cards.splice(i,1); save(); render();
+    }
+  }
+});
+
+$('#lightbox').addEventListener('click', () => $('#lightbox').classList.remove('show'));
+
+/* ================= ساخت فرم ================= */
+function buildForm(){
+  const box = $('#formFields');
+  box.innerHTML = FIELDS.map(f => {
+    if (f.type === 'photo'){
+      return `<div class="field full">
+        <label>عکس</label>
+        <div class="photo-pick">
+          <img id="photoPrev" alt="" />
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <input type="file" accept="image/*" id="photoInput" hidden />
+            <button type="button" class="btn" id="photoBtn">📷 انتخاب عکس</button>
+            <button type="button" class="btn" id="photoDel">حذف عکس</button>
+          </div>
+        </div>
+      </div>`;
+    }
+    if (f.type === 'textarea'){
+      return `<div class="field full">
+        <label>${f.label}</label>
+        <textarea id="f_${f.k}" rows="3" placeholder="${f.ph || ''}"></textarea>
+      </div>`;
+    }
+    return `<div class="field">
+      <label>${f.label}</label>
+      <input id="f_${f.k}" type="${f.type}" ${f.type === 'number' ? 'inputmode="numeric"' : ''} placeholder="${f.ph || ''}" />
+    </div>`;
+  }).join('');
+
+  $('#photoBtn').addEventListener('click', () => $('#photoInput').click());
+  $('#photoDel').addEventListener('click', () => { curPhoto = ''; updatePhotoPrev(); });
+  $('#photoInput').addEventListener('change', async e => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    try {
+      curPhoto = await resizeImage(file, 420, 0.72);
+      updatePhotoPrev();
+    } catch(err){ alert('عکس خوانده نشد.'); }
+    e.target.value = '';
+  });
+}
+
+function updatePhotoPrev(){
+  const img = $('#photoPrev');
+  if (curPhoto){ img.src = curPhoto; img.classList.add('on'); }
+  else { img.removeAttribute('src'); img.classList.remove('on'); }
+}
+
+function resizeImage(file, max, quality){
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        let w = img.width, h = img.height;
+        const scale = Math.min(1, max / Math.max(w, h));
+        w = Math.round(w * scale); h = Math.round(h * scale);
+        const cv = document.createElement('canvas');
+        cv.width = w; cv.height = h;
+        cv.getContext('2d').drawImage(img, 0, 0, w, h);
+        resolve(cv.toDataURL('image/jpeg', quality));
+      };
+      img.onerror = reject;
+      img.src = reader.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+/* ================= باز و بسته کردن فرم ================= */
+function openForm(id){
+  editingId = id || null;
+  const c = id ? (cards.find(x => x.id === id) || {}) : {};
+
+  FIELDS.forEach(f => {
+    if (f.type === 'photo') return;
+    const el = document.getElementById('f_' + f.k);
+    if (el) el.value = c[f.k] ?? '';
+  });
+  curPhoto = (typeof c.photo === 'string') ? c.photo : '';
+  updatePhotoPrev();
+
+  $('#mTitle').textContent = id ? 'ویرایش اطلاعات' : 'افزودن شخص جدید';
+  $('#modal').classList.add('show');
+  document.body.style.overflow = 'hidden';
+  $('#modal .sheet-body').scrollTop = 0;
+}
+
+function closeForm(){
+  $('#modal').classList.remove('show');
+  document.body.style.overflow = '';
+  editingId = null;
+  curPhoto = '';
+}
+
+$('#btnSave').addEventListener('click', () => {
+  const obj = { id: editingId || uid() };
+  FIELDS.forEach(f => {
+    if (f.type === 'photo') return;
+    const el = document.getElementById('f_' + f.k);
+    obj[f.k] = el ? el.value.trim() : '';
+  });
+  obj.photo = curPhoto;
+
+  const empty = FIELDS.every(f => f.type === 'photo' || String(obj[f.k] || '').trim() === '');
+  if (empty){ alert('حداقل یک مورد را پر کنید.'); return; }
+
+  if (editingId){
+    const i = cards.findIndex(x => x.id === editingId);
+    if (i > -1) cards[i] = obj; else cards.push(obj);
+  } else {
+    cards.push(obj);
+  }
+  save(); render(); closeForm();
+});
+
+$('#btnClose').addEventListener('click', closeForm);
+$('#btnCancel').addEventListener('click', closeForm);
+$('#btnAdd').addEventListener('click', () => openForm(null));
+$('#fab').addEventListener('click', () => openForm(null));
+$('#modal').addEventListener('click', e => { if (e.target.id === 'modal') closeForm(); });
+
+/* ================= مرتب‌سازی ================= */
+$('#btnSort').addEventListener('click', () => {
+  if (cards.length < 2) return;
+  if (!confirm('کارت‌ها بر اساس امتیاز (بیشترین به کمترین) مرتب شوند؟')) return;
+  cards.sort((a,b) => (parseFloat(b.score) || 0) - (parseFloat(a.score) || 0));
+  save(); render();
+});
+
+/* ================= پشتیبان‌گیری / بازیابی ================= */
+$('#btnExport').addEventListener('click', () => {
+  if (!cards.length){ alert('اطلاعاتی برای پشتیبان‌گیری وجود ندارد.'); return; }
+  const blob = new Blob([JSON.stringify(cards)], { type:'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'khastegari-' + new Date().toISOString().slice(0,10) + '.json';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+});
+
+$('#btnImport').addEventListener('click', () => $('#importInput').click());
+
+$('#importInput').addEventListener('change', e => {
+  const file = e.target.files && e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const arr = JSON.parse(reader.result);
+      if (!Array.isArray(arr)) throw new Error('bad');
+      const clean = arr.map(x => ({ id: x.id || uid(), ...x }));
+
+      if (cards.length){
+        const replace = confirm('اطلاعات فعلی جایگزین شود؟\n(تأیید = جایگزینی ، لغو = ادغام با اطلاعات فعلی)');
+        if (replace){
+          cards = clean;
+        } else {
+          clean.forEach(x => { if (!cards.some(y => y.id === x.id)) cards.push(x); });
+        }
+      } else {
+        cards = clean;
+      }
+      save(); render();
+      alert('بازیابی انجام شد ✔');
+    } catch(err){
+      alert('فایل معتبر نیست.');
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+});
+
+/* ================= لینک اشتراک ================= */
+$('#btnShare').addEventListener('click', async () => {
+  if (!cards.length){ alert('اطلاعاتی برای ارسال وجود ندارد.'); return; }
+
+  const withPhotos = !confirm('عکس‌ها هم در لینک ارسال شوند؟\n(تأیید = با عکس ، لغو = بدون عکس و سبک‌تر)');
+
+  const payload = cards.map(c => {
+    const copy = { ...c };
+    if (!withPhotos) delete copy.photo;
+    return copy;
+  });
+
+  const base = location.href.split('#')[0];
+  const url = base + '#d=' + b64enc(JSON.stringify(payload));
+
+  if (url.length > 100000){
+    alert('حجم اطلاعات زیاد است و لینک خیلی طولانی می‌شود.\nاز «پشتیبان‌گیری» استفاده کن و فایل را برای خانواده بفرست.');
+    return;
+  }
+
+  try {
+    if (navigator.share){
+      await navigator.share({ title:'اطلاعات مقایسه', url });
+    } else {
+      await navigator.clipboard.writeText(url);
+      alert('لینک کپی شد ✔ آن را در واتساپ/تلگرام بفرست.');
+    }
+  } catch(err){
+    prompt('لینک را کپی کن:', url);
+  }
+});
+
+/* ================= دریافت اطلاعات از لینک ================= */
+(function checkHash(){
+  const m = location.hash.match(/^#d=(.+)$/);
+  if (!m) return;
+  try {
+    const arr = JSON.parse(b64dec(m[1]));
+    if (!Array.isArray(arr)) return;
+    if (confirm('اطلاعات جدیدی دریافت شد. بارگذاری شود؟\n(اطلاعات فعلی جایگزین می‌شود)')){
+      cards = arr.map(x => ({ id: x.id || uid(), ...x }));
+      save();
+    }
+    history.replaceState(null, '', location.pathname + location.search);
+  } catch(e){ /* نادیده */ }
+})();
+
+/* ================= شروع ================= */
+buildForm();
+load();
+render();
+</script>
+</body>
+</html>
